@@ -243,17 +243,14 @@ export const IndexView: React.FC<IndexViewProps> = ({
               <div key={idx} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-mono font-bold text-slate-400 w-3">{idx + 1}</span>
-                  {s.favicon && (
-                    <img
-                      src={s.favicon}
-                      alt=""
-                      onError={(e: any) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                      }}
-                      className="w-3.5 h-3.5 rounded-sm object-contain"
-                    />
-                  )}
+                  <img
+                    src={s.favicon}
+                    alt=""
+                    onError={(e: any) => {
+                      e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                    }}
+                    className="w-3.5 h-3.5 rounded-sm object-contain"
+                  />
                   <span className="text-slate-800 font-medium truncate max-w-[130px]" title={s.host}>
                     {s.displayName}
                   </span>
@@ -364,16 +361,14 @@ export const IndexView: React.FC<IndexViewProps> = ({
                     className="p-4 sm:p-5 hover:bg-rose-50/30 transition-colors flex items-center justify-between gap-4 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      {item.favicon && (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          onError={(e: any) => {
-                            e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                          }}
-                          className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
-                        />
-                      )}
+                      <img
+                        src={item.favicon}
+                        alt=""
+                        onError={(e: any) => {
+                          e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                        }}
+                        className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm text-slate-900 truncate">
@@ -463,16 +458,14 @@ export const IndexView: React.FC<IndexViewProps> = ({
                     className="p-4 sm:p-5 hover:bg-rose-50/30 transition-colors flex items-center justify-between gap-4 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      {item.favicon && (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          onError={(e: any) => {
-                            e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                          }}
-                          className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
-                        />
-                      )}
+                      <img
+                        src={item.favicon}
+                        alt=""
+                        onError={(e: any) => {
+                          e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                        }}
+                        className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-sm text-slate-900 truncate">

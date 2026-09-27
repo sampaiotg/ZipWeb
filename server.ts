@@ -50,16 +50,6 @@ interface UserAccount {
   createdAt: number;
 }
 
-interface CompressedSectionItem {
-  id: string;
-  title: string;
-  snippet?: string;
-  tokensBefore: number;
-  tokensAfter: number;
-  tokensSaved: number;
-  compressionRate: number;
-}
-
 interface CachedPage {
   html: string;
   title: string;
@@ -72,8 +62,6 @@ interface CachedPage {
   durationMs: number;
   estimatedSavings: number;
   timestamp: number;
-  compressionMode?: string;
-  sections?: CompressedSectionItem[];
 }
 
 interface StorageSchema {
@@ -436,11 +424,6 @@ class Storage {
 
   public setCachedPage(url: string, page: CachedPage): void {
     this.data.cachedPages[url] = page;
-    this.save();
-  }
-
-  public deleteCachedPage(url: string): void {
-    delete this.data.cachedPages[url];
     this.save();
   }
 
@@ -853,24 +836,8 @@ function createSavingsBannerHtml(params: {
   pageTitle?: string;
   siteName?: string;
   favicon?: string;
-  compressionMode?: string;
-  sections?: CompressedSectionItem[];
 }): string {
-  const {
-    targetUrl,
-    surface,
-    compressionRate,
-    tokensBefore,
-    tokensAfter,
-    tokensSaved,
-    durationMs,
-    estimatedSavingsUsd,
-    pageTitle,
-    siteName,
-    favicon,
-    compressionMode = 'medium-auto3',
-    sections = []
-  } = params;
+  const { targetUrl, surface, compressionRate, tokensBefore, tokensAfter, tokensSaved, durationMs, estimatedSavingsUsd, pageTitle, siteName, favicon } = params;
   const returnPath = surface === 'index' ? '/index' : '/go';
   const throughput = durationMs > 0 ? Math.round((tokensBefore / (durationMs / 1000))) : 0;
 
@@ -1004,12 +971,10 @@ function createSavingsBannerHtml(params: {
     display: none !important;
   }
 
-  body.gptzip-diff-active .gptzip-view-compressed,
-  .gptzip-compressed-node.gptzip-element-diff-active .gptzip-view-compressed {
+  body.gptzip-diff-active .gptzip-view-compressed {
     display: none !important;
   }
-  body.gptzip-diff-active .gptzip-view-diff,
-  .gptzip-compressed-node.gptzip-element-diff-active .gptzip-view-diff {
+  body.gptzip-diff-active .gptzip-view-diff {
     display: inline !important;
   }
 
@@ -1075,27 +1040,7 @@ function createSavingsBannerHtml(params: {
     border: 1px solid rgba(5, 150, 105, 0.35) !important;
     font-weight: 600 !important;
   }
-  /* Floating Sidebar CSS */
-  #gz-items-sidebar {
-    display: none;
-    position: fixed;
-    top: 60px; /* Aligned with banner height */
-    left: 0;
-    width: 320px;
-    height: calc(100% - 60px);
-    background: #0b1120;
-    border-right: 1px solid #334155;
-    z-index: 2147483646;
-    flex-direction: column;
-  }
-  #gz-items-sidebar.gz-sidebar-open {
-    display: flex;
-  }
-  .gz-sb-title {
-    white-space: normal;
-    word-wrap: break-word;
-  }
-
+</style>
 <div id="gptzip-mirror-banner">
   <div class="gz-container">
     <div class="gz-brand">
@@ -1113,25 +1058,17 @@ function createSavingsBannerHtml(params: {
         <span class="gz-stat-val">${tokensBefore.toLocaleString()} → ${tokensAfter.toLocaleString()}</span>
         <span style="color:#10b981;">(-${tokensSaved.toLocaleString()})</span>
       </div>
-      <div class="gz-stat-pill" title="Compression mode used">
-        <span>Mode:</span>
-        <span style="color:#38bdf8;font-weight:700;font-family:monospace;">${compressionMode}</span>
-      </div>
-      <div class="gz-stat-pill" title="Time taken to fetch and compress page">
-        <span>Time:</span>
-        <span style="color:#c084fc;font-weight:700;font-family:monospace;">${durationMs}ms</span>
-      </div>
       <div class="gz-stat-pill">
         <span>Estimated Savings:</span>
         <span class="gz-stat-val" style="color:#facc15;">$${estimatedSavingsUsd.toFixed(4)}</span>
       </div>
+      <div class="gz-stat-pill" style="display:none; @media(min-width:768px){display:flex;}">
+        <span>Speed:</span>
+        <span class="gz-stat-val">${durationMs}ms (${throughput.toLocaleString()} tok/s)</span>
+      </div>
     </div>
 
     <div class="gz-actions">
-      <button id="gz-btn-view-items" class="gz-btn gz-btn-secondary" onclick="toggleGzItemsSidebar()" title="View compressed items & navigate sections">
-        <span style="color:#f59e0b;font-weight:bold;">☰</span>
-        <span id="gz-items-btn-label">View Compressed Items (<span id="gz-items-count">${sections.length}</span>)</span>
-      </button>
       <button id="gz-toggle-diff" class="gz-btn gz-btn-secondary" onclick="toggleGzDiffMode()" title="Toggle word-level inline diff mode">
         <span id="gz-diff-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;"></span>
         <span id="gz-diff-label">Inline Diff</span>
@@ -1148,7 +1085,6 @@ function createSavingsBannerHtml(params: {
     </div>
   </div>
 
-
   <!-- Interactive Diff Legend Bar (Shows when Diff mode is toggled) -->
   <div id="gz-diff-legend" style="display:none;max-width:1200px;margin:8px auto 0 auto;padding-top:7px;border-top:1px solid #1e293b;align-items:center;justify-content:center;gap:16px;font-size:11px;color:#94a3b8;flex-wrap:wrap;">
     <span style="font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.04em;">Inline Diff Legend:</span>
@@ -1163,11 +1099,8 @@ function createSavingsBannerHtml(params: {
     </span>
   </div>
 </div>
-
 <script id="gptzip-banner-offset-script">
   (function() {
-    var rawSections = ${JSON.stringify(sections)};
-
     function setBannerOffset() {
       var b = document.getElementById('gptzip-mirror-banner');
       if (b) {
@@ -1176,27 +1109,12 @@ function createSavingsBannerHtml(params: {
         if (document.body) {
           document.body.style.setProperty('padding-top', h + 'px', 'important');
         }
-        var sb = document.getElementById('gz-items-sidebar');
-        if (sb) {
-          sb.style.top = h + 'px';
-        }
       }
     }
     window.setBannerOffset = setBannerOffset;
 
-    window.toggleGzDiffMode = function(forceActive) {
-      var isActive;
-      if (typeof forceActive === 'boolean') {
-        if (forceActive) {
-          document.body.classList.add('gptzip-diff-active');
-          isActive = true;
-        } else {
-          document.body.classList.remove('gptzip-diff-active');
-          isActive = false;
-        }
-      } else {
-        isActive = document.body.classList.toggle('gptzip-diff-active');
-      }
+    window.toggleGzDiffMode = function() {
+      var isActive = document.body.classList.toggle('gptzip-diff-active');
       var btn = document.getElementById('gz-toggle-diff');
       var label = document.getElementById('gz-diff-label');
       var dot = document.getElementById('gz-diff-dot');
@@ -1221,156 +1139,17 @@ function createSavingsBannerHtml(params: {
       setBannerOffset();
     };
 
-    window.scrollGzToItem = function(id, showDiff) {
-      var el = document.getElementById(id);
-      if (el) {
-        // Automatically ensure inline diff is visible when navigating to item
-        if (showDiff !== false) {
-          if (!document.body.classList.contains('gptzip-diff-active')) {
-            window.toggleGzDiffMode(true);
-          }
-          el.classList.add('gptzip-element-diff-active');
-        }
-
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('gptzip-target-pulse');
-        setTimeout(function() {
-          el.classList.remove('gptzip-target-pulse');
-        }, 3000);
-
-        var items = document.querySelectorAll('.gz-sb-item');
-        for (var i = 0; i < items.length; i++) {
-          if (items[i].getAttribute('data-id') === id) {
-            items[i].classList.add('gz-sb-active');
-            items[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          } else {
-            items[i].classList.remove('gz-sb-active');
-          }
-        }
-      }
-    };
-
-    window.toggleGzItemsSidebar = function() {
-      var sb = document.getElementById('gz-items-sidebar');
-      var btn = document.getElementById('gz-btn-view-items');
-      if (sb) {
-        var isOpen = sb.classList.toggle('gz-sidebar-open');
-        if (btn) {
-          if (isOpen) btn.classList.add('gz-btn-items-active');
-          else btn.classList.remove('gz-btn-items-active');
-        }
-      }
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'TOGGLE_ITEMS_SIDEBAR' }, '*');
-      }
-    };
-
-    function renderSidebarItems(itemsToRender) {
-      var container = document.getElementById('gz-sb-list-container');
-      if (!container) return;
-      container.innerHTML = '';
-      if (!itemsToRender || itemsToRender.length === 0) {
-        container.innerHTML = '<div style="padding:16px;text-align:center;color:#64748b;font-size:12px;">No compressed sections found</div>';
-        return;
-      }
-      for (var i = 0; i < itemsToRender.length; i++) {
-        (function(it, idx) {
-          var div = document.createElement('div');
-          div.className = 'gz-sb-item';
-          div.setAttribute('data-id', it.id);
-          div.onclick = function() {
-            window.scrollGzToItem(it.id, true);
-          };
-          div.innerHTML = '<div class="gz-sb-item-head">' +
-            '<div class="gz-sb-item-name">#' + (idx + 1) + ' ' + (it.title || 'Section') + '</div>' +
-            '<div class="gz-sb-item-badges">' +
-              '<span class="gz-sb-badge-rate">-' + it.compressionRate + '%</span>' +
-              '<span class="gz-sb-badge-saved">-' + it.tokensSaved + ' tok</span>' +
-            '</div>' +
-          '</div>' +
-          '<div style="font-size:10px;color:#94a3b8;font-family:monospace;margin-top:2px;">' + it.tokensBefore + ' → ' + it.tokensAfter + ' tokens</div>' +
-          (it.snippet ? '<div class="gz-sb-item-snippet">' + it.snippet + '</div>' : '');
-          container.appendChild(div);
-        })(itemsToRender[i], i);
-      }
-    }
-
-    window.filterGzItems = function(q) {
-      if (!q) {
-        renderSidebarItems(rawSections);
-        return;
-      }
-      var lower = q.toLowerCase();
-      var filtered = rawSections.filter(function(it) {
-        return (it.title && it.title.toLowerCase().indexOf(lower) >= 0) ||
-               (it.snippet && it.snippet.toLowerCase().indexOf(lower) >= 0);
-      });
-      renderSidebarItems(filtered);
-    };
-
-    function collectSectionsFromDOM() {
-      if (rawSections && rawSections.length > 0) return rawSections;
-      var nodes = document.querySelectorAll('.gptzip-compressed-node');
-      var list = [];
-      for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        var id = n.getAttribute('id') || ('gz-item-' + (i + 1));
-        if (!n.getAttribute('id')) n.setAttribute('id', id);
-        var saved = parseInt(n.getAttribute('data-gz-saved') || '0', 10);
-        var rate = parseFloat(n.getAttribute('data-gz-rate') || '0');
-        var before = parseInt(n.getAttribute('data-gz-before') || '0', 10);
-        var after = parseInt(n.getAttribute('data-gz-after') || '0', 10);
-        var title = n.getAttribute('data-gz-title') || ('Section ' + (i + 1));
-        var txt = (n.textContent || '').trim().replace(/\\s+/g, ' ');
-        list.push({
-          id: id,
-          title: title,
-          snippet: txt.slice(0, 110),
-          tokensBefore: before,
-          tokensAfter: after,
-          tokensSaved: saved,
-          compressionRate: rate
-        });
-      }
-      rawSections = list;
-      return list;
-    }
-
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'TOGGLE_DIFF') {
         window.toggleGzDiffMode();
       }
-      if (e.data && e.data.type === 'SCROLL_TO_ITEM' && e.data.id) {
-        window.scrollGzToItem(e.data.id, e.data.showDiff);
-      }
-      if (e.data && e.data.type === 'GET_ITEMS') {
-        var items = collectSectionsFromDOM();
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: 'POLLUX_SECTIONS_UPDATE', sections: items }, '*');
-        }
-      }
     });
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-        setBannerOffset();
-        var items = collectSectionsFromDOM();
-        renderSidebarItems(items);
-        var cnt = document.getElementById('gz-items-count');
-        if (cnt) cnt.textContent = items.length;
-        var sbc = document.getElementById('gz-sidebar-count-badge');
-        if (sbc) sbc.textContent = items.length;
-      });
+      document.addEventListener('DOMContentLoaded', setBannerOffset);
     } else {
       setBannerOffset();
-      var items = collectSectionsFromDOM();
-      renderSidebarItems(items);
-      var cnt = document.getElementById('gz-items-count');
-      if (cnt) cnt.textContent = items.length;
-      var sbc = document.getElementById('gz-sidebar-count-badge');
-      if (sbc) sbc.textContent = items.length;
     }
-
     window.addEventListener('resize', setBannerOffset);
     setTimeout(setBannerOffset, 50);
     setTimeout(setBannerOffset, 200);
@@ -1390,9 +1169,7 @@ function createSavingsBannerHtml(params: {
           tokensSaved: ${tokensSaved},
           compressionRate: ${compressionRate},
           estimatedSavings: ${estimatedSavingsUsd},
-          durationMs: ${durationMs},
-          compressionMode: ${JSON.stringify(compressionMode)},
-          sections: rawSections
+          durationMs: ${durationMs}
         };
         window.parent.postMessage(payload, '*');
         window.parent.postMessage(Object.assign({}, payload, { type: 'GPTZIP_METRICS' }), '*');
@@ -1491,10 +1268,6 @@ async function startServer() {
 
     const normalizedUrl = safetyCheck.normalizedUrl;
     const anonId = (req as any).anonId;
-
-    store.deleteCachedPage(normalizedUrl);
-    
-    // Continue with crawl intent reservation...
     const visitor = store.getVisitor(anonId);
 
     if (!visitor) {
@@ -1541,10 +1314,7 @@ async function startServer() {
           estimatedSavings: cached.estimatedSavings,
           siteName: cached.siteName,
           pageTitle: cached.title,
-          favicon: cached.favicon,
-          durationMs: cached.durationMs || 180,
-          compressionMode: cached.compressionMode || 'medium-auto3',
-          sections: cached.sections || []
+          favicon: cached.favicon
         }
       : feedMatch
       ? {
@@ -1555,10 +1325,7 @@ async function startServer() {
           estimatedSavings: feedMatch.estimatedSavings,
           siteName: feedMatch.siteName,
           pageTitle: feedMatch.pageTitle,
-          favicon: feedMatch.favicon,
-          durationMs: feedMatch.durationMs || 180,
-          compressionMode: 'medium-auto3',
-          sections: []
+          favicon: feedMatch.favicon
         }
       : null;
 
@@ -1600,10 +1367,7 @@ async function startServer() {
         tokensAfter: cached.tokensAfter,
         tokensSaved: cached.tokensSaved,
         compressionRate: cached.compressionRate,
-        estimatedSavings: cached.estimatedSavings,
-        durationMs: cached.durationMs || 180,
-        compressionMode: cached.compressionMode || 'medium-auto3',
-        sections: cached.sections || []
+        estimatedSavings: cached.estimatedSavings
       });
     }
 
@@ -1618,10 +1382,7 @@ async function startServer() {
         tokensAfter: feedItem.tokensAfter,
         tokensSaved: feedItem.tokensSaved,
         compressionRate: feedItem.compressionRate,
-        estimatedSavings: feedItem.estimatedSavings,
-        durationMs: feedItem.durationMs || 180,
-        compressionMode: 'medium-auto3',
-        sections: []
+        estimatedSavings: feedItem.estimatedSavings
       });
     }
 
@@ -1647,9 +1408,9 @@ async function startServer() {
     const normalizedUrl = safetyCheck.normalizedUrl;
     const anonId = (req as any).anonId;
 
-    // Check cached page first (ensure it has navigation sidebar and inline-diff markup)
+    // Check cached page first (ensure it has inline-diff markup)
     const cached = store.getCachedPage(normalizedUrl);
-    if (cached && cached.html.includes('gptzip-element-diff-active')) {
+    if (cached && cached.html.includes('gz-toggle-diff')) {
       // Mark intent redeemed if any
       if (intentId) {
         store.redeemIntent(anonId, intentId, normalizedUrl);
@@ -1756,62 +1517,18 @@ async function startServer() {
 
       let totalTokensBefore = 0;
       let totalTokensAfter = 0;
-      const compressedSections: CompressedSectionItem[] = [];
 
       // Compress text blocks (limit batch to top 40 significant blocks to avoid extreme latency)
       const targetBlocks = textNodesToCompress.slice(0, 40);
-      let sectionCounter = 0;
-
       for (const item of targetBlocks) {
         const resComp = await compressTextBlock(item.originalText);
         totalTokensBefore += resComp.tokensBefore;
 
         if (resComp.tokensSaved > 0) {
           totalTokensAfter += resComp.tokensAfter;
-          sectionCounter++;
-          const sectionId = `gz-item-${sectionCounter}`;
-
-          // Determine nearest heading or context label
-          let sectionTitle = '';
-          const tagName = (item.elem.tagName || '').toLowerCase();
-          if (/^h[1-6]$/.test(tagName)) {
-            sectionTitle = item.originalText.trim().slice(0, 50);
-          } else {
-            let prev = item.elem.previousElementSibling;
-            while (prev && !sectionTitle) {
-              const ptag = (prev.tagName || '').toLowerCase();
-              if (/^h[1-6]$/.test(ptag)) {
-                sectionTitle = prev.text.trim().slice(0, 50);
-                break;
-              }
-              prev = prev.previousElementSibling;
-            }
-          }
-          if (!sectionTitle) {
-            const words = item.originalText.trim().split(/\s+/).slice(0, 6).join(' ');
-            sectionTitle = words.length > 40 ? words.slice(0, 40) + '...' : words;
-          }
-
           const diffMarkup = computeInlineDiff(item.originalText, resComp.compressedText);
-          item.elem.setAttribute('id', sectionId);
-          item.elem.setAttribute('data-gz-item-id', sectionId);
-          item.elem.setAttribute('data-gz-saved', String(resComp.tokensSaved));
-          item.elem.setAttribute('data-gz-rate', String(resComp.compressionRate));
-          item.elem.setAttribute('data-gz-before', String(resComp.tokensBefore));
-          item.elem.setAttribute('data-gz-after', String(resComp.tokensAfter));
-          item.elem.setAttribute('data-gz-title', sectionTitle);
           item.elem.setAttribute('class', `${item.elem.getAttribute('class') || ''} gptzip-compressed-node`.trim());
           item.elem.innerHTML = `<span class="gptzip-view-compressed">${escapeHtml(resComp.compressedText)}</span><span class="gptzip-view-diff">${diffMarkup}</span>`;
-
-          compressedSections.push({
-            id: sectionId,
-            title: sectionTitle,
-            snippet: item.originalText.trim().slice(0, 110),
-            tokensBefore: resComp.tokensBefore,
-            tokensAfter: resComp.tokensAfter,
-            tokensSaved: resComp.tokensSaved,
-            compressionRate: resComp.compressionRate
-          });
         } else {
           totalTokensAfter += resComp.tokensBefore;
         }
@@ -1887,9 +1604,7 @@ async function startServer() {
         estimatedSavingsUsd,
         pageTitle,
         siteName,
-        favicon: faviconUrl,
-        compressionMode: 'medium-auto3',
-        sections: compressedSections
+        favicon: faviconUrl
       });
 
       const body = root.querySelector('body');
@@ -1911,9 +1626,7 @@ async function startServer() {
         compressionRate: overallRate,
         durationMs,
         estimatedSavings: estimatedSavingsUsd,
-        timestamp: Date.now(),
-        compressionMode: 'medium-auto3',
-        sections: compressedSections
+        timestamp: Date.now()
       };
       store.setCachedPage(normalizedUrl, cachedPage);
 

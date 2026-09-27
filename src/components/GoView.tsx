@@ -14,39 +14,20 @@ interface GoViewProps {
 
 const SAMPLE_PRESETS = [
   {
-    name: 'arXiv: Attention Is All You Need',
-    url: 'https://arxiv.org/html/1706.03762v7',
-    badge: 'Transformers'
-  },
-  {
-    name: 'arXiv: DeepSeek-R1',
-    url: 'https://arxiv.org/html/2501.12948v1',
-    badge: 'Reasoning RL'
-  },
-  {
-    name: 'arXiv: LoRA',
-    url: 'https://arxiv.org/html/2106.09685v2',
-    badge: 'Adaptation'
-  },
-  {
-    name: 'arXiv: RAG',
-    url: 'https://arxiv.org/html/2005.11401v4',
-    badge: 'Retrieval'
-  },
-  {
     name: 'Wikipedia: Transformer',
-    url: 'https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)',
-    badge: 'Wiki'
+    url: 'https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)'
   },
   {
     name: 'MDN: HTTP Caching',
-    url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching',
-    badge: 'Docs'
+    url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching'
   },
   {
     name: 'Hacker News',
-    url: 'https://news.ycombinator.com',
-    badge: 'Live'
+    url: 'https://news.ycombinator.com'
+  },
+  {
+    name: 'arXiv: Attention Is All You Need',
+    url: 'https://arxiv.org/abs/1706.03762'
   }
 ];
 
@@ -80,11 +61,6 @@ export const GoView: React.FC<GoViewProps> = ({
     let target = trimmed;
     if (!/^https?:\/\//i.test(target)) {
       target = `https://${target}`;
-    }
-
-    // Auto-normalize arXiv /abs/ links to full /html/ paper URLs
-    if (/^https?:\/\/arxiv\.org\/abs\//i.test(target)) {
-      target = target.replace(/\/abs\//i, '/html/');
     }
 
     try {
@@ -221,14 +197,9 @@ export const GoView: React.FC<GoViewProps> = ({
                   setUrlInput(p.url);
                   setErrorMessage(null);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-50 hover:text-amber-800 text-slate-700 transition-all font-medium flex items-center gap-1.5 border border-slate-200/80 hover:border-amber-300"
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-50 hover:text-amber-800 text-slate-600 transition-colors font-medium"
               >
-                <span>{p.name}</span>
-                {p.badge && (
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-500/15 text-amber-700">
-                    {p.badge}
-                  </span>
-                )}
+                {p.name}
               </button>
             ))}
           </div>
@@ -276,12 +247,17 @@ export const GoView: React.FC<GoViewProps> = ({
       <div className="w-full max-w-3xl px-4 mt-10 mb-16">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-amber-600" />
+            <History className="w-4 h-4 text-rose-600" />
             <h2 className="text-base font-bold text-slate-800">
               Compressed History
             </h2>
             <span className="text-xs text-slate-400">({history.length}/20 in browser)</span>
           </div>
+          {history.length > 0 && (
+            <span className="text-xs text-slate-400">
+              Authoritative quota tracked server-side
+            </span>
+          )}
         </div>
 
         {history.length === 0 ? (
@@ -298,20 +274,17 @@ export const GoView: React.FC<GoViewProps> = ({
               <div
                 key={item.id}
                 onClick={() => onOpenMirror(`/go/mirror?target=${encodeURIComponent(item.url)}`)}
-                className="p-3.5 sm:p-4 hover:bg-amber-50/40 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+                className="p-3.5 sm:p-4 hover:bg-rose-50/40 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  {item.favicon && (
-                    <img
-                      src={item.favicon}
-                      alt=""
-                      onError={(e: any) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                      }}
-                      className="w-5 h-5 rounded-sm object-contain shrink-0 bg-slate-100 p-0.5"
-                    />
-                  )}
+                  <img
+                    src={item.favicon}
+                    alt=""
+                    onError={(e: any) => {
+                      e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                    }}
+                    className="w-5 h-5 rounded-sm object-contain shrink-0 bg-slate-100 p-0.5"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-slate-900 truncate">
