@@ -26,10 +26,6 @@ const SAMPLE_PRESETS = [
     url: 'https://arxiv.org/html/1810.04805v2'
   },
   {
-    name: 'arXiv: GPT-3',
-    url: 'https://arxiv.org/html/2005.14165v9'
-  },
-  {
     name: 'arXiv: AlphaGeometry',
     url: 'https://arxiv.org/html/2309.05669v1'
   },
