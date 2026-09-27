@@ -283,11 +283,14 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
             {/* Reload, External & Close */}
             <button
-              onClick={() => setIframeKey(k => k + 1)}
-              title="Reload preview"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              onClick={() => {
+                setIframeKey(k => k + 1);
+              }}
+              title="Refresh compression result"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition-colors border border-slate-700"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
             </button>
             <a
               href={mirrorUrl}
