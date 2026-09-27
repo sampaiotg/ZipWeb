@@ -36,9 +36,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
   const [compressionMode, setCompressionMode] = useState<string>('medium-auto3');
   const [durationMs, setDurationMs] = useState<number>(0);
   const [tokensSaved, setTokensSaved] = useState<number>(0);
-  const [tokensBefore, setTokensBefore] = useState<number>(0);
-  const [tokensAfter, setTokensAfter] = useState<number>(0);
-  const [estimatedSavings, setEstimatedSavings] = useState<number>(0);
   const [compressionRate, setCompressionRate] = useState<number>(0);
   const [pageTitle, setPageTitle] = useState<string>('');
 
@@ -81,9 +78,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
       if (data.compressionMode) setCompressionMode(data.compressionMode);
       if (data.durationMs) setDurationMs(data.durationMs);
       if (data.tokensSaved) setTokensSaved(data.tokensSaved);
-      if (data.tokensBefore) setTokensBefore(data.tokensBefore);
-      if (data.tokensAfter) setTokensAfter(data.tokensAfter);
-      if (data.estimatedSavings) setEstimatedSavings(data.estimatedSavings);
       if (data.compressionRate) setCompressionRate(data.compressionRate);
       if (data.title) setPageTitle(data.title);
       if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
@@ -118,9 +112,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
         if (e.data.compressionMode) setCompressionMode(e.data.compressionMode);
         if (e.data.durationMs) setDurationMs(e.data.durationMs);
         if (e.data.tokensSaved) setTokensSaved(e.data.tokensSaved);
-        if (e.data.tokensBefore) setTokensBefore(e.data.tokensBefore);
-        if (e.data.tokensAfter) setTokensAfter(e.data.tokensAfter);
-        if (e.data.estimatedSavings) setEstimatedSavings(e.data.estimatedSavings);
         if (e.data.compressionRate) setCompressionRate(e.data.compressionRate);
         if (e.data.title) setPageTitle(e.data.title);
         if (e.data.sections && Array.isArray(e.data.sections) && e.data.sections.length > 0) {
@@ -245,14 +236,9 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
         <div className="min-h-14 py-2 px-3 sm:px-4 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-20">
           {/* Left: Brand & Address Bar */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 max-w-xl">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 text-white text-xs font-black tracking-tight flex items-center gap-1 shadow-xs">
-                <span>✦</span> Pollux.ZIP
-              </span>
-              <span className="text-[11px] text-slate-300 hidden md:inline font-medium">
-                The Compressed Web · <span className="text-amber-400 font-semibold">Gemini AI Internet</span>
-              </span>
-            </div>
+            <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 text-white text-xs font-black tracking-tight flex items-center gap-1 shadow-xs shrink-0">
+              <span>✦</span> Pollux.ZIP
+            </span>
 
             {/* Direct URL Address Bar inside preview */}
             <form onSubmit={handleCompressNewUrl} className="flex-1 flex items-center min-w-0 max-w-md">
@@ -283,59 +269,39 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
           {/* Right: Mode, Latency, Savings, View Compressed Items button, Diff & Window actions */}
           <div className="flex items-center flex-wrap gap-2">
-            {/* Reduction Badge */}
+            {/* Reduction & Savings Badge */}
             {compressionRate > 0 && (
-              <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-950/70 border border-emerald-800/80 text-[11px] font-mono text-emerald-300">
-                <span className="text-slate-400 hidden lg:inline">Reduction:</span>
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-950/70 border border-emerald-800/80 text-[11px] font-mono text-emerald-300">
+                <TrendingDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span className="font-bold text-emerald-200">-{compressionRate}%</span>
-              </div>
-            )}
-
-            {/* Tokens Badge */}
-            {tokensBefore > 0 && (
-              <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-800/90 border border-slate-700 text-[11px] font-mono text-slate-300">
-                <span className="text-slate-400">Tokens:</span>
-                <span className="font-bold text-sky-200">
-                  {tokensBefore.toLocaleString()} → {tokensAfter.toLocaleString()}
-                </span>
                 {tokensSaved > 0 && (
-                  <span className="text-emerald-400 font-semibold">
-                    (-{tokensSaved.toLocaleString()})
+                  <span className="text-emerald-400/80 hidden lg:inline">
+                    (-{tokensSaved.toLocaleString()} tok)
                   </span>
                 )}
               </div>
             )}
 
-            {/* Estimated Savings */}
-            {estimatedSavings > 0 && (
-              <div className="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-950/60 border border-amber-800/70 text-[11px] font-mono text-amber-200">
-                <span className="text-amber-400/80">Estimated Savings:</span>
-                <span className="font-bold text-amber-300">
-                  ${estimatedSavings.toFixed(4)}
-                </span>
-              </div>
-            )}
-
-            {/* 1. Latency / Time to Compress Indicator */}
+            {/* 1. Compression Mode Indicator */}
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-950/70 border border-purple-800/80 text-[11px] font-mono text-purple-200 shadow-xs"
-              title="Time taken to fetch, strip noise, and compress this page"
-            >
-              <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-              <span className="text-slate-400 hidden sm:inline">Time:</span>
-              <span className="font-bold text-purple-300">
-                {durationMs > 0 ? `${durationMs}ms` : '184ms'}
-              </span>
-            </div>
-
-            {/* 2. Compression Mode Indicator */}
-            <div
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-950/70 border border-sky-800/80 text-[11px] font-mono text-sky-300 shadow-xs"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-950/70 border border-sky-800/80 text-[11px] font-mono text-sky-300 shadow-xs"
               title="LLM token compression algorithm mode"
             >
               <Cpu className="w-3.5 h-3.5 text-sky-400 shrink-0" />
               <span className="text-slate-400 hidden xl:inline">Mode:</span>
               <span className="font-bold text-sky-200">{compressionMode}</span>
+            </div>
+
+            {/* 2. Latency / Time to Compress Indicator */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-950/70 border border-purple-800/80 text-[11px] font-mono text-purple-200 shadow-xs"
+              title="Time taken to fetch, strip noise, and compress this page"
+            >
+              <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+              <span className="text-slate-400 hidden xl:inline">Time:</span>
+              <span className="font-bold text-purple-300">
+                {durationMs > 0 ? `${durationMs}ms` : '184ms'}
+              </span>
             </div>
 
             {/* 3. View Compressed Items Button */}
@@ -598,6 +564,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
           {/* Embedded Iframe */}
           <div className="flex-1 w-full h-full relative">
+          {activeMirrorUrl && (
             <iframe
               ref={iframeRef}
               key={iframeKey}
@@ -606,6 +573,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
               className="w-full h-full border-none"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
+          )}
           </div>
         </div>
       </div>

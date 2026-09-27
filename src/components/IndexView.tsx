@@ -11,8 +11,7 @@ import {
   Trash2,
   RefreshCw,
   Search,
-  Sparkles,
-  Clock
+  Sparkles
 } from 'lucide-react';
 import { IndexOverview, IndexFeedItem, HistoryItem, UsageState } from '../types';
 import { fetchIndexOverview, fetchIndexFeed, createCrawlIntent, saveLocalHistoryItem, removeLocalHistoryItem } from '../lib/api';
@@ -114,7 +113,6 @@ export const IndexView: React.FC<IndexViewProps> = ({
         tokensSaved: cm ? cm.tokensSaved : 0,
         estimatedUsdSaved: cm ? cm.estimatedSavings : 0,
         compressionRate: cm ? cm.compressionRate : 0,
-        durationMs: cm ? cm.durationMs : undefined,
         timestamp: Date.now()
       };
       const updated = saveLocalHistoryItem(historyEntry);
@@ -245,14 +243,17 @@ export const IndexView: React.FC<IndexViewProps> = ({
               <div key={idx} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-mono font-bold text-slate-400 w-3">{idx + 1}</span>
-                  <img
-                    src={s.favicon}
-                    alt=""
-                    onError={(e: any) => {
-                      e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                    }}
-                    className="w-3.5 h-3.5 rounded-sm object-contain"
-                  />
+                  {s.favicon && (
+                    <img
+                      src={s.favicon}
+                      alt=""
+                      onError={(e: any) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                      }}
+                      className="w-3.5 h-3.5 rounded-sm object-contain"
+                    />
+                  )}
                   <span className="text-slate-800 font-medium truncate max-w-[130px]" title={s.host}>
                     {s.displayName}
                   </span>
@@ -363,14 +364,16 @@ export const IndexView: React.FC<IndexViewProps> = ({
                     className="p-4 sm:p-5 hover:bg-rose-50/30 transition-colors flex items-center justify-between gap-4 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <img
-                        src={item.favicon}
-                        alt=""
-                        onError={(e: any) => {
-                          e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                        }}
-                        className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
-                      />
+                      {item.favicon && (
+                        <img
+                          src={item.favicon}
+                          alt=""
+                          onError={(e: any) => {
+                            e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                          }}
+                          className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
+                        />
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm text-slate-900 truncate">
@@ -460,14 +463,16 @@ export const IndexView: React.FC<IndexViewProps> = ({
                     className="p-4 sm:p-5 hover:bg-rose-50/30 transition-colors flex items-center justify-between gap-4 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <img
-                        src={item.favicon}
-                        alt=""
-                        onError={(e: any) => {
-                          e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
-                        }}
-                        className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
-                      />
+                      {item.favicon && (
+                        <img
+                          src={item.favicon}
+                          alt=""
+                          onError={(e: any) => {
+                            e.target.src = 'https://www.google.com/s2/favicons?domain=example.com&sz=64';
+                          }}
+                          className="w-6 h-6 rounded-md object-contain shrink-0 bg-slate-50 p-0.5 border border-slate-100"
+                        />
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-sm text-slate-900 truncate">
@@ -486,22 +491,6 @@ export const IndexView: React.FC<IndexViewProps> = ({
                         <p className="text-xs text-slate-400 font-mono truncate mt-0.5">
                           {item.url}
                         </p>
-                        <div className="flex items-center flex-wrap gap-2 mt-1.5 text-[11px] text-slate-500">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200/80 font-mono font-semibold">
-                            <Clock className="w-3 h-3 text-purple-500" />
-                            <span>{item.durationMs ? `${item.durationMs}ms` : '184ms'}</span>
-                          </span>
-                          {item.tokensSaved > 0 && (
-                            <span className="text-emerald-700 font-medium">
-                              {item.tokensSaved.toLocaleString()} tokens saved
-                            </span>
-                          )}
-                          {item.estimatedUsdSaved > 0 && (
-                            <span className="text-slate-400 hidden sm:inline">
-                              (${item.estimatedUsdSaved.toFixed(4)})
-                            </span>
-                          )}
-                        </div>
                       </div>
                     </div>
 
@@ -512,13 +501,8 @@ export const IndexView: React.FC<IndexViewProps> = ({
                             <div className="text-xs font-semibold text-slate-800">
                               {item.tokensSaved.toLocaleString()} tokens saved
                             </div>
-                            <div className="text-[11px] text-slate-400 flex items-center justify-end gap-1.5 mt-0.5">
-                              <span>~${item.estimatedUsdSaved.toFixed(4)} saved</span>
-                              <span className="text-slate-300">·</span>
-                              <span className="inline-flex items-center gap-1 text-purple-600 font-mono font-medium">
-                                <Clock className="w-3 h-3 text-purple-500" />
-                                {item.durationMs ? `${item.durationMs}ms` : '184ms'}
-                              </span>
+                            <div className="text-[11px] text-slate-400">
+                              ~${item.estimatedUsdSaved.toFixed(4)} saved
                             </div>
                           </>
                         ) : (
