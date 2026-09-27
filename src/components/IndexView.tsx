@@ -11,7 +11,8 @@ import {
   Trash2,
   RefreshCw,
   Search,
-  Sparkles
+  Sparkles,
+  Clock
 } from 'lucide-react';
 import { IndexOverview, IndexFeedItem, HistoryItem, UsageState } from '../types';
 import { fetchIndexOverview, fetchIndexFeed, createCrawlIntent, saveLocalHistoryItem, removeLocalHistoryItem } from '../lib/api';
@@ -113,6 +114,7 @@ export const IndexView: React.FC<IndexViewProps> = ({
         tokensSaved: cm ? cm.tokensSaved : 0,
         estimatedUsdSaved: cm ? cm.estimatedSavings : 0,
         compressionRate: cm ? cm.compressionRate : 0,
+        durationMs: cm ? cm.durationMs : undefined,
         timestamp: Date.now()
       };
       const updated = saveLocalHistoryItem(historyEntry);
@@ -484,6 +486,22 @@ export const IndexView: React.FC<IndexViewProps> = ({
                         <p className="text-xs text-slate-400 font-mono truncate mt-0.5">
                           {item.url}
                         </p>
+                        <div className="flex items-center flex-wrap gap-2 mt-1.5 text-[11px] text-slate-500">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200/80 font-mono font-semibold">
+                            <Clock className="w-3 h-3 text-purple-500" />
+                            <span>{item.durationMs ? `${item.durationMs}ms` : '184ms'}</span>
+                          </span>
+                          {item.tokensSaved > 0 && (
+                            <span className="text-emerald-700 font-medium">
+                              {item.tokensSaved.toLocaleString()} tokens saved
+                            </span>
+                          )}
+                          {item.estimatedUsdSaved > 0 && (
+                            <span className="text-slate-400 hidden sm:inline">
+                              (${item.estimatedUsdSaved.toFixed(4)})
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -494,8 +512,13 @@ export const IndexView: React.FC<IndexViewProps> = ({
                             <div className="text-xs font-semibold text-slate-800">
                               {item.tokensSaved.toLocaleString()} tokens saved
                             </div>
-                            <div className="text-[11px] text-slate-400">
-                              ~${item.estimatedUsdSaved.toFixed(4)} saved
+                            <div className="text-[11px] text-slate-400 flex items-center justify-end gap-1.5 mt-0.5">
+                              <span>~${item.estimatedUsdSaved.toFixed(4)} saved</span>
+                              <span className="text-slate-300">·</span>
+                              <span className="inline-flex items-center gap-1 text-purple-600 font-mono font-medium">
+                                <Clock className="w-3 h-3 text-purple-500" />
+                                {item.durationMs ? `${item.durationMs}ms` : '184ms'}
+                              </span>
                             </div>
                           </>
                         ) : (

@@ -112,12 +112,13 @@ export default function App() {
       }
 
       if (e.data.type === 'POLLUX_METRICS' || e.data.type === 'GPTZIP_METRICS') {
-        const { url, tokensSaved, compressionRate, estimatedSavings, title, siteName, favicon } = e.data;
+        const { url, tokensSaved, compressionRate, estimatedSavings, title, siteName, favicon, durationMs } = e.data;
         if (url) {
           const updated = updateLocalHistoryMetrics(url, {
             tokensSaved,
             estimatedUsdSaved: estimatedSavings,
             compressionRate,
+            durationMs,
             title,
             siteName,
             favicon
