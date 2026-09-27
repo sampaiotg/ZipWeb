@@ -439,6 +439,11 @@ class Storage {
     this.save();
   }
 
+  public deleteCachedPage(url: string): void {
+    delete this.data.cachedPages[url];
+    this.save();
+  }
+
   public getUser(userId: string): UserAccount | null {
     return this.data.users[userId] || null;
   }
@@ -1486,6 +1491,10 @@ async function startServer() {
 
     const normalizedUrl = safetyCheck.normalizedUrl;
     const anonId = (req as any).anonId;
+
+    store.deleteCachedPage(normalizedUrl);
+    
+    // Continue with crawl intent reservation...
     const visitor = store.getVisitor(anonId);
 
     if (!visitor) {

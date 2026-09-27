@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CompressedSectionItem } from '../types';
 import { fetchPageMetrics } from '../lib/api';
+import { createCrawlIntent } from '../lib/api';
 
 interface MirrorModalProps {
   mirrorUrl: string | null;
@@ -283,8 +284,13 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
             {/* Reload, External & Close */}
             <button
-              onClick={() => {
-                setIframeKey(k => k + 1);
+              onClick={async () => {
+                try {
+                  await createCrawlIntent(targetUrl);
+                  setIframeKey(k => k + 1);
+                } catch (err) {
+                  console.error('Failed to refresh compression:', err);
+                }
               }}
               title="Refresh compression result"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition-colors border border-slate-700"
