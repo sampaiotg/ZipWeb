@@ -417,7 +417,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
                             <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 shrink-0">
                               #{idx + 1}
                             </span>
-                            <span className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition-colors truncate">
+                            <span className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition-colors">
                               {item.title}
                             </span>
                           </div>
