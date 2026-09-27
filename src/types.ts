@@ -14,6 +14,16 @@ export interface UsageState {
   completedUrls: string[];
 }
 
+export interface CompressedSectionItem {
+  id: string;
+  title: string;
+  snippet?: string;
+  tokensBefore: number;
+  tokensAfter: number;
+  tokensSaved: number;
+  compressionRate: number;
+}
+
 export interface CachedMetrics {
   tokensBefore: number;
   tokensAfter: number;
@@ -23,6 +33,9 @@ export interface CachedMetrics {
   siteName?: string;
   pageTitle?: string;
   favicon?: string;
+  compressionMode?: string;
+  durationMs?: number;
+  sections?: CompressedSectionItem[];
 }
 
 export interface CrawlIntentResponse {
@@ -89,5 +102,6 @@ export interface HistoryItem {
   tokensSaved: number;
   estimatedUsdSaved: number;
   compressionRate: number;
+  durationMs?: number;
   timestamp: number;
 }

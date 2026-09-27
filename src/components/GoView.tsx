@@ -18,16 +18,28 @@ const SAMPLE_PRESETS = [
     url: 'https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)'
   },
   {
-    name: 'MDN: HTTP Caching',
-    url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching'
-  },
-  {
-    name: 'Hacker News',
-    url: 'https://news.ycombinator.com'
-  },
-  {
     name: 'arXiv: Attention Is All You Need',
-    url: 'https://arxiv.org/abs/1706.03762'
+    url: 'https://arxiv.org/html/1706.03762v7'
+  },
+  {
+    name: 'arXiv: BERT',
+    url: 'https://arxiv.org/html/1810.04805v2'
+  },
+  {
+    name: 'arXiv: GPT-3',
+    url: 'https://arxiv.org/html/2005.14165v9'
+  },
+  {
+    name: 'arXiv: AlphaGeometry',
+    url: 'https://arxiv.org/html/2309.05669v1'
+  },
+  {
+    name: 'arXiv: Gemini',
+    url: 'https://arxiv.org/html/2312.11805v3'
+  },
+  {
+    name: 'arXiv: AlphaFold 3',
+    url: 'https://arxiv.org/html/2405.14088v1'
   }
 ];
 

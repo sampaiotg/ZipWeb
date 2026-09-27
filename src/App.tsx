@@ -87,16 +87,38 @@ export default function App() {
     });
   }, [refreshUsage]);
 
+  // Framebuster protection: if App is ever loaded inside an iframe, break out or request close
+  useEffect(() => {
+    try {
+      if (window.self !== window.top) {
+        window.top?.postMessage({ type: 'CLOSE_MIRROR' }, '*');
+      }
+    } catch {}
+  }, []);
+
   // Synchronize authoritative metrics from mirror banner iframe directly
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      if (e.data && (e.data.type === 'POLLUX_METRICS' || e.data.type === 'GPTZIP_METRICS')) {
-        const { url, tokensSaved, compressionRate, estimatedSavings, title, siteName, favicon } = e.data;
+      if (!e.data) return;
+
+      if (e.data.type === 'CLOSE_MIRROR') {
+        setMirrorModalUrl(null);
+        return;
+      }
+
+      if (e.data.type === 'OPEN_MIRROR' && e.data.url) {
+        setMirrorModalUrl(e.data.url);
+        return;
+      }
+
+      if (e.data.type === 'POLLUX_METRICS' || e.data.type === 'GPTZIP_METRICS') {
+        const { url, tokensSaved, compressionRate, estimatedSavings, title, siteName, favicon, durationMs } = e.data;
         if (url) {
           const updated = updateLocalHistoryMetrics(url, {
             tokensSaved,
             estimatedUsdSaved: estimatedSavings,
             compressionRate,
+            durationMs,
             title,
             siteName,
             favicon
