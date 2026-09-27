@@ -9,13 +9,10 @@ import {
   Search,
   ChevronRight,
   Sparkles,
-  Zap,
-  ArrowRight,
-  Loader2,
-  TrendingDown
+  Zap
 } from 'lucide-react';
 import { CompressedSectionItem } from '../types';
-import { fetchPageMetrics, createCrawlIntent } from '../lib/api';
+import { fetchPageMetrics } from '../lib/api';
 
 interface MirrorModalProps {
   mirrorUrl: string | null;
@@ -26,7 +23,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
   mirrorUrl,
   onClose
 }) => {
-  const [activeMirrorUrl, setActiveMirrorUrl] = useState<string>(mirrorUrl || '');
   const [iframeKey, setIframeKey] = useState(0);
   const [isDiffActive, setIsDiffActive] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -39,34 +35,16 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
   const [compressionRate, setCompressionRate] = useState<number>(0);
   const [pageTitle, setPageTitle] = useState<string>('');
 
-  // Top URL input for compressing another page directly without nesting
-  const [urlInput, setUrlInput] = useState('');
-  const [isNavigating, setIsNavigating] = useState(false);
-
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Sync activeMirrorUrl when prop changes
-  useEffect(() => {
-    if (mirrorUrl) {
-      setActiveMirrorUrl(mirrorUrl);
-    }
-  }, [mirrorUrl]);
-
-  // Extract raw target URL for display and queries
+  // Extract raw target for direct external link and metric query
   let targetUrl = '';
   try {
-    if (activeMirrorUrl) {
-      const urlObj = new URL(activeMirrorUrl, window.location.origin);
+    if (mirrorUrl) {
+      const urlObj = new URL(mirrorUrl, window.location.origin);
       targetUrl = urlObj.searchParams.get('target') || '';
     }
   } catch {}
-
-  // Keep urlInput in sync with targetUrl
-  useEffect(() => {
-    if (targetUrl) {
-      setUrlInput(targetUrl);
-    }
-  }, [targetUrl]);
 
   // Fetch authoritative metadata from API on target change
   useEffect(() => {
@@ -103,11 +81,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
         setIsSidebarOpen(prev => !prev);
       }
 
-      if (e.data.type === 'CLOSE_MIRROR') {
-        onClose();
-        return;
-      }
-
       if (e.data.type === 'POLLUX_METRICS' || e.data.type === 'GPTZIP_METRICS') {
         if (e.data.compressionMode) setCompressionMode(e.data.compressionMode);
         if (e.data.durationMs) setDurationMs(e.data.durationMs);
@@ -128,14 +101,14 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
     window.addEventListener('message', handleMsg);
     return () => window.removeEventListener('message', handleMsg);
-  }, [onClose]);
+  }, []);
 
   // Reset state when URL changes
   useEffect(() => {
     setIsDiffActive(false);
     setSelectedItemId(null);
     setSearchQuery('');
-  }, [activeMirrorUrl]);
+  }, [mirrorUrl]);
 
   if (!mirrorUrl) return null;
 
@@ -189,36 +162,6 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
     } catch {}
   };
 
-  // Compress a new page in-place without creating a nested modal
-  const handleCompressNewUrl = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const trimmed = urlInput.trim();
-    if (!trimmed) return;
-
-    let target = trimmed;
-    if (!/^https?:\/\//i.test(target)) {
-      target = `https://${target}`;
-    }
-
-    // Auto-rewrite arXiv /abs/ links to /html/ for full paper content
-    if (/^https?:\/\/arxiv\.org\/abs\//i.test(target)) {
-      target = target.replace(/\/abs\//i, '/html/');
-      setUrlInput(target);
-    }
-
-    setIsNavigating(true);
-    try {
-      const intentRes = await createCrawlIntent(target);
-      const newMirrorPath = intentRes.redirectUrl || `/api/mirror?target=${encodeURIComponent(target)}&intentId=${intentRes.intentId || ''}`;
-      setActiveMirrorUrl(newMirrorPath);
-      setIframeKey(k => k + 1);
-    } catch (err) {
-      console.error('Failed to compress new URL:', err);
-    } finally {
-      setIsNavigating(false);
-    }
-  };
-
   // Filter sections by search query
   const filteredSections = sections.filter(sec => {
     if (!searchQuery.trim()) return true;
@@ -232,63 +175,35 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
       <div className="bg-slate-900 rounded-3xl w-full h-full max-w-7xl flex flex-col border border-slate-700/80 shadow-2xl overflow-hidden relative">
-        {/* Top Control Bar - SINGLE AUTHORITATIVE HEADER */}
+        {/* Top Control Bar */}
         <div className="min-h-14 py-2 px-3 sm:px-4 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-20">
-          {/* Left: Brand & Address Bar */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 max-w-xl">
-            <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 text-white text-xs font-black tracking-tight flex items-center gap-1 shadow-xs shrink-0">
+          {/* Left: Brand, Target & Preview Label */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 text-white text-xs font-black tracking-tight flex items-center gap-1 shadow-xs">
               <span>✦</span> Pollux.ZIP
             </span>
-
-            {/* Direct URL Address Bar inside preview */}
-            <form onSubmit={handleCompressNewUrl} className="flex-1 flex items-center min-w-0 max-w-md">
-              <div className="relative w-full flex items-center">
-                <input
-                  type="text"
-                  value={urlInput}
-                  onChange={e => setUrlInput(e.target.value)}
-                  placeholder="Enter URL to compress..."
-                  className="w-full pl-3 pr-8 py-1.5 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-slate-200 font-mono placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
-                  title="Enter any URL to compress in-place"
-                />
-                <button
-                  type="submit"
-                  disabled={isNavigating}
-                  title="Compress this URL"
-                  className="absolute right-1 px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] transition-colors flex items-center gap-1 disabled:opacity-50"
-                >
-                  {isNavigating ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <ArrowRight className="w-3 h-3" />
-                  )}
-                </button>
-              </div>
-            </form>
+            <span className="text-xs text-slate-300 font-medium hidden sm:inline">
+              Compressed Web Preview
+            </span>
+            {targetUrl && (
+              <span
+                className="text-xs text-slate-400 font-mono truncate max-w-[130px] sm:max-w-[240px] md:max-w-[320px] bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60"
+                title={targetUrl}
+              >
+                {targetUrl}
+              </span>
+            )}
           </div>
 
-          {/* Right: Mode, Latency, Savings, View Compressed Items button, Diff & Window actions */}
+          {/* Right: Mode, Latency, View Compressed Items button, Diff & Window actions */}
           <div className="flex items-center flex-wrap gap-2">
-            {/* Reduction & Savings Badge */}
-            {compressionRate > 0 && (
-              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-950/70 border border-emerald-800/80 text-[11px] font-mono text-emerald-300">
-                <TrendingDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-bold text-emerald-200">-{compressionRate}%</span>
-                {tokensSaved > 0 && (
-                  <span className="text-emerald-400/80 hidden lg:inline">
-                    (-{tokensSaved.toLocaleString()} tok)
-                  </span>
-                )}
-              </div>
-            )}
-
             {/* 1. Compression Mode Indicator */}
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-950/70 border border-sky-800/80 text-[11px] font-mono text-sky-300 shadow-xs"
               title="LLM token compression algorithm mode"
             >
               <Cpu className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-              <span className="text-slate-400 hidden xl:inline">Mode:</span>
+              <span className="text-slate-400 hidden md:inline">Mode:</span>
               <span className="font-bold text-sky-200">{compressionMode}</span>
             </div>
 
@@ -298,7 +213,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
               title="Time taken to fetch, strip noise, and compress this page"
             >
               <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-              <span className="text-slate-400 hidden xl:inline">Time:</span>
+              <span className="text-slate-400 hidden md:inline">Time:</span>
               <span className="font-bold text-purple-300">
                 {durationMs > 0 ? `${durationMs}ms` : '184ms'}
               </span>
@@ -315,8 +230,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
               }`}
             >
               <Layers className={`w-3.5 h-3.5 ${isSidebarOpen ? 'text-slate-950' : 'text-amber-400'}`} />
-              <span className="hidden sm:inline">View Compressed Items</span>
-              <span className="sm:hidden">Items</span>
+              <span>View Compressed Items</span>
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                   isSidebarOpen
@@ -334,7 +248,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
               title="Toggle inline diff mode with Removed, Replaced, and Added color coding"
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 isDiffActive
-                  ? 'bg-amber-600 text-white shadow-sm shadow-amber-500/30 font-bold'
+                  ? 'bg-amber-600 text-white shadow-sm shadow-amber-500/30'
                   : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700'
               }`}
             >
@@ -349,7 +263,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
             {/* Diff Legend Pill */}
             {isDiffActive && (
-              <div className="hidden 2xl:flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-300">
+              <div className="hidden xl:flex items-center gap-2 text-[11px] px-2.5 py-1 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-300">
                 <span className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                   <span className="line-through text-rose-300 font-medium">Removed</span>
@@ -376,10 +290,10 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
               <RefreshCw className="w-4 h-4" />
             </button>
             <a
-              href={activeMirrorUrl}
+              href={mirrorUrl}
               target="_blank"
               rel="noopener noreferrer"
-              title="Open full standalone mirror in new tab"
+              title="Open full mirror in new tab"
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
@@ -462,7 +376,7 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
                 <div className="mt-2 text-[10px] text-slate-400 flex items-center gap-1">
                   <Zap className="w-3 h-3 text-amber-400" />
-                  <span>Click any section to scroll & show inline diff</span>
+                  <span>Click any section to scroll & highlight in the mirror</span>
                 </div>
               </div>
 
@@ -564,16 +478,14 @@ export const MirrorModal: React.FC<MirrorModalProps> = ({
 
           {/* Embedded Iframe */}
           <div className="flex-1 w-full h-full relative">
-          {activeMirrorUrl && (
             <iframe
               ref={iframeRef}
               key={iframeKey}
-              src={activeMirrorUrl}
+              src={mirrorUrl}
               title="Pollux.ZIP Compressed Web Mirror"
               className="w-full h-full border-none"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
-          )}
           </div>
         </div>
       </div>

@@ -102,6 +102,5 @@ export interface HistoryItem {
   tokensSaved: number;
   estimatedUsdSaved: number;
   compressionRate: number;
-  durationMs?: number;
   timestamp: number;
 }

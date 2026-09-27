@@ -156,70 +156,19 @@ const INITIAL_SEED_FEED: IndexFeedItem[] = [
   {
     id: 'seed-5',
     timestamp: Date.now() - 1000 * 60 * 210,
-    publicUrl: 'https://arxiv.org/html/1706.03762v7',
+    publicUrl: 'https://arxiv.org/abs/1706.03762',
     siteHost: 'arxiv.org',
     siteName: 'arXiv',
-    pageTitle: 'Attention Is All You Need - Vaswani et al. (Transformers)',
+    pageTitle: 'Attention Is All You Need - Vaswani et al.',
     favicon: 'https://arxiv.org/favicon.ico',
     countryCode: 'US',
-    tokensBefore: 18450,
-    tokensAfter: 11620,
-    tokensSaved: 6830,
-    compressionRate: 37.0,
-    estimatedSavings: 0.0171,
-    durationMs: 145,
-    tokensPerSec: 58210
-  },
-  {
-    id: 'seed-5b',
-    timestamp: Date.now() - 1000 * 60 * 180,
-    publicUrl: 'https://arxiv.org/html/2501.12948v1',
-    siteHost: 'arxiv.org',
-    siteName: 'arXiv',
-    pageTitle: 'DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL',
-    favicon: 'https://arxiv.org/favicon.ico',
-    countryCode: 'US',
-    tokensBefore: 24200,
-    tokensAfter: 15730,
-    tokensSaved: 8470,
-    compressionRate: 35.0,
-    estimatedSavings: 0.0212,
-    durationMs: 210,
-    tokensPerSec: 61500
-  },
-  {
-    id: 'seed-5c',
-    timestamp: Date.now() - 1000 * 60 * 150,
-    publicUrl: 'https://arxiv.org/html/2106.09685v2',
-    siteHost: 'arxiv.org',
-    siteName: 'arXiv',
-    pageTitle: 'LoRA: Low-Rank Adaptation of Large Language Models - Hu et al.',
-    favicon: 'https://arxiv.org/favicon.ico',
-    countryCode: 'US',
-    tokensBefore: 16800,
-    tokensAfter: 10420,
-    tokensSaved: 6380,
-    compressionRate: 38.0,
-    estimatedSavings: 0.0159,
-    durationMs: 165,
-    tokensPerSec: 59300
-  },
-  {
-    id: 'seed-5d',
-    timestamp: Date.now() - 1000 * 60 * 120,
-    publicUrl: 'https://arxiv.org/html/2005.11401v4',
-    siteHost: 'arxiv.org',
-    siteName: 'arXiv',
-    pageTitle: 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks - Lewis et al.',
-    favicon: 'https://arxiv.org/favicon.ico',
-    countryCode: 'US',
-    tokensBefore: 19500,
-    tokensAfter: 12285,
-    tokensSaved: 7215,
-    compressionRate: 37.0,
-    estimatedSavings: 0.0180,
-    durationMs: 185,
-    tokensPerSec: 57800
+    tokensBefore: 5120,
+    tokensAfter: 3180,
+    tokensSaved: 1940,
+    compressionRate: 37.9,
+    estimatedSavings: 0.0049,
+    durationMs: 94,
+    tokensPerSec: 54468
   },
   {
     id: 'seed-6',
@@ -632,12 +581,6 @@ async function isSafeUrl(rawUrl: string): Promise<{ safe: boolean; error?: strin
     const cleanQuery = cleanParams.toString();
     parsed.search = cleanQuery ? `?${cleanQuery}` : '';
 
-    // Automatically normalize arXiv /abs/ URLs to full /html/ paper URLs
-    const hostClean = parsed.hostname.replace(/^www\./, '').toLowerCase();
-    if (hostClean === 'arxiv.org' && parsed.pathname.startsWith('/abs/')) {
-      parsed.pathname = parsed.pathname.replace(/^\/abs\//, '/html/');
-    }
-
     return { safe: true, normalizedUrl: parsed.toString(), parsed };
   } catch (err: any) {
     return { safe: false, error: `Invalid URL: ${err.message}` };
@@ -935,20 +878,6 @@ function createSavingsBannerHtml(params: {
   body {
     padding-top: 60px !important;
   }
-
-  /* When embedded inside MirrorModal iframe, suppress duplicate banner and reset page padding */
-  body.gz-in-iframe #gptzip-mirror-banner,
-  body.gz-in-iframe #gz-items-sidebar,
-  body.gz-in-iframe #gz-diff-legend {
-    display: none !important;
-  }
-  body.gz-in-iframe {
-    padding-top: 0px !important;
-  }
-  html.gz-in-iframe {
-    scroll-padding-top: 0px !important;
-  }
-
   #gptzip-mirror-banner {
     position: fixed !important;
     top: 0 !important;
@@ -1188,7 +1117,7 @@ function createSavingsBannerHtml(params: {
       <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="gz-btn gz-btn-secondary">
         View Original ↗
       </a>
-      <a href="${returnPath}" target="_top" onclick="return handleGzBackToApp(event)" class="gz-btn gz-btn-primary">
+      <a href="${returnPath}" class="gz-btn gz-btn-primary">
         Back to ${surface === 'index' ? 'Index' : 'Go'}
       </a>
     </div>
@@ -1230,35 +1159,8 @@ function createSavingsBannerHtml(params: {
 <script id="gptzip-banner-offset-script">
   (function() {
     var rawSections = ${JSON.stringify(sections)};
-    var isEmbedded = false;
-    try {
-      isEmbedded = window.parent && window.parent !== window;
-    } catch (e) {
-      isEmbedded = true;
-    }
-
-    if (isEmbedded) {
-      document.documentElement.classList.add('gz-in-iframe');
-      if (document.body) {
-        document.body.classList.add('gz-in-iframe');
-        document.body.style.setProperty('padding-top', '0px', 'important');
-      }
-      document.documentElement.style.setProperty('scroll-padding-top', '0px', 'important');
-    }
-
-    window.handleGzBackToApp = function(e) {
-      if (isEmbedded) {
-        if (e && e.preventDefault) e.preventDefault();
-        window.parent.postMessage({ type: 'CLOSE_MIRROR' }, '*');
-        return false;
-      }
-      return true;
-    };
 
     function setBannerOffset() {
-      if (isEmbedded) {
-        return;
-      }
       var b = document.getElementById('gptzip-mirror-banner');
       if (b) {
         var h = (b.getBoundingClientRect().height || b.offsetHeight || 54);
@@ -1733,9 +1635,9 @@ async function startServer() {
     const normalizedUrl = safetyCheck.normalizedUrl;
     const anonId = (req as any).anonId;
 
-    // Check cached page first (ensure it has navigation sidebar, inline-diff, and iframe banner suppressor)
+    // Check cached page first (ensure it has navigation sidebar and inline-diff markup)
     const cached = store.getCachedPage(normalizedUrl);
-    if (cached && cached.html.includes('gptzip-element-diff-active') && cached.html.includes('gz-in-iframe')) {
+    if (cached && cached.html.includes('gptzip-element-diff-active')) {
       // Mark intent redeemed if any
       if (intentId) {
         store.redeemIntent(anonId, intentId, normalizedUrl);
@@ -1830,7 +1732,7 @@ async function startServer() {
         const elems = root.querySelectorAll(tag);
         for (const elem of elems) {
           // Check if parent or element is in forbidden tags
-          if (elem.closest('pre') || elem.closest('code') || elem.closest('form') || elem.closest('script') || elem.closest('svg')) {
+          if (elem.closest('pre') || elem.closest('code') || elem.closest('form') || elem.closest('script')) {
             continue;
           }
           const rawText = elem.text.trim();
@@ -1914,17 +1816,17 @@ async function startServer() {
       const estimatedSavingsUsd = Number(((totalTokensSaved / 1_000_000) * 2.5).toFixed(4)); // $2.50 per 1M input tokens
 
       // Resolve relative URLs in DOM
-      // Images, scripts & sources
-      const mediaElems = root.querySelectorAll('img, video, audio, source, link, script');
+      // Images & sources
+      const mediaElems = root.querySelectorAll('img, video, audio, source, link');
       for (const el of mediaElems) {
         const src = el.getAttribute('src');
-        if (src !== null && !src.startsWith('data:') && !src.startsWith('blob:')) {
+        if (src && !src.startsWith('data:') && !src.startsWith('blob:')) {
           try {
             el.setAttribute('src', new URL(src, normalizedUrl).toString());
           } catch {}
         }
         const href = el.getAttribute('href');
-        if (href !== null && !href.startsWith('data:') && !href.startsWith('#') && !href.startsWith('javascript:')) {
+        if (href && !href.startsWith('data:') && !href.startsWith('#') && !href.startsWith('javascript:')) {
           try {
             el.setAttribute('href', new URL(href, normalizedUrl).toString());
           } catch {}

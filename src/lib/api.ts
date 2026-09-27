@@ -112,7 +112,6 @@ export function updateLocalHistoryMetrics(url: string, metrics: {
   tokensSaved: number;
   estimatedUsdSaved: number;
   compressionRate: number;
-  durationMs?: number;
   title?: string;
   siteName?: string;
   favicon?: string;
@@ -126,7 +125,6 @@ export function updateLocalHistoryMetrics(url: string, metrics: {
         tokensSaved: metrics.tokensSaved,
         estimatedUsdSaved: metrics.estimatedUsdSaved,
         compressionRate: metrics.compressionRate,
-        durationMs: metrics.durationMs !== undefined ? metrics.durationMs : current[idx].durationMs,
         title: metrics.title || current[idx].title,
         siteName: metrics.siteName || current[idx].siteName,
         favicon: metrics.favicon || current[idx].favicon
