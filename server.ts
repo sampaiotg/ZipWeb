@@ -1143,6 +1143,7 @@ function createSavingsBannerHtml(params: {
     </div>
   </div>
 
+
   <!-- Interactive Diff Legend Bar (Shows when Diff mode is toggled) -->
   <div id="gz-diff-legend" style="display:none;max-width:1200px;margin:8px auto 0 auto;padding-top:7px;border-top:1px solid #1e293b;align-items:center;justify-content:center;gap:16px;font-size:11px;color:#94a3b8;flex-wrap:wrap;">
     <span style="font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.04em;">Inline Diff Legend:</span>
@@ -1155,24 +1156,6 @@ function createSavingsBannerHtml(params: {
     <span style="display:inline-flex;align-items:center;gap:5px;">
       <span style="background:rgba(16,185,129,0.22);color:#4ade80;text-decoration:underline;padding:1px 6px;border-radius:4px;border:1px solid rgba(16,185,129,0.4);font-weight:600;">Added Words</span>
     </span>
-  </div>
-</div>
-
-<!-- Floating Navigation on the Left Side (for standalone mirror view) -->
-<div id="gz-items-sidebar">
-  <div class="gz-sb-head">
-    <div class="gz-sb-title-row">
-      <div class="gz-sb-title">
-        <span style="color:#f59e0b;">✦</span>
-        <span>Compressed Sections</span>
-        <span class="gz-sb-count" id="gz-sidebar-count-badge">${sections.length}</span>
-      </div>
-      <button onclick="toggleGzItemsSidebar()" class="gz-sb-close" title="Close navigation">✕</button>
-    </div>
-    <input type="text" placeholder="Filter sections..." oninput="filterGzItems(this.value)" class="gz-sb-input" />
-  </div>
-  <div id="gz-sb-list-container" class="gz-sb-list">
-    <!-- Populated by script -->
   </div>
 </div>
 
